@@ -1,7 +1,6 @@
 package router
 
 import (
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -48,7 +47,7 @@ func preFlight() []Page {
 
 func getTemplatesToServe() []Page {
 	f, _ := os.Getwd()
-	files, err := ioutil.ReadDir(f + TEMPLATES_PATH)
+	files, err := os.ReadDir(f + TEMPLATES_PATH)
 
 	if err != nil {
 		log.Fatal(err)
@@ -57,7 +56,7 @@ func getTemplatesToServe() []Page {
 	var pages []Page
 	for _, file := range files {
 		if file.IsDir() {
-			subdirFiles, err := ioutil.ReadDir(fp.Join(TEMPLATES_PATH, file.Name()))
+			subdirFiles, err := os.ReadDir(fp.Join(TEMPLATES_PATH, file.Name()))
 			if err != nil {
 				log.Fatal(err)
 			}
