@@ -46,7 +46,12 @@ func preFlight() []Page {
 }
 
 func getTemplatesToServe() []Page {
-	f, _ := os.Getwd()
+	f, err := os.Getwd()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	files, err := os.ReadDir(f + TEMPLATES_PATH)
 
 	if err != nil {
