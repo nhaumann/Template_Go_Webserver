@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
-	"strings"
+	fp "path/filepath"
+	str "strings"
 )
 
 type Page struct {
@@ -14,21 +14,23 @@ type Page struct {
 	route   string
 }
 
-func Serve() {
+const NOT_FOUND_PATH = "./templates/notfound.html"
+const TEMPLATES_PATH = "./templates"
+
+func ServeTemplatesAndStyles() {
 	pages := preFlight()
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		for _, page := range pages {
 			if r.URL.Path == page.route {
-				http.ServeFile(w, r, filepath.Join("./templates/", page.relPath))
+				http.ServeFile(w, r, fp.Join(TEMPLATES_PATH, page.relPath))
 				return
 			}
 		}
-		if strings.HasPrefix(r.URL.Path, "/static/") {
-			//serve the static files
-			http.ServeFile(w, r, filepath.Join(".", r.URL.Path))
+		if str.HasPrefix(r.URL.Path, "/static/") {
+			http.ServeFile(w, r, fp.Join(".", r.URL.Path))
 			return
 		}
-		http.ServeFile(w, r, "./templates/notfound.html")
+		http.ServeFile(w, r, NOT_FOUND_PATH)
 	})
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
@@ -44,9 +46,9 @@ func preFlight() []Page {
 }
 
 func getTemplatesToServe() []Page {
-	//get root directory of project
 	f, _ := os.Getwd()
-	files, err := ioutil.ReadDir(f + "/templates")
+	files, err := ioutil.ReadDir(f + TEMPLATES_PATH)
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -54,7 +56,7 @@ func getTemplatesToServe() []Page {
 	var pages []Page
 	for _, file := range files {
 		if file.IsDir() {
-			subdirFiles, err := ioutil.ReadDir(filepath.Join("./templates", file.Name()))
+			subdirFiles, err := ioutil.ReadDir(fp.Join(TEMPLATES_PATH, file.Name()))
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -62,10 +64,13 @@ func getTemplatesToServe() []Page {
 				pages = append(
 					pages,
 					Page{
-						filepath.Join(file.Name(), subdirFile.Name()), "/" + strings.Replace(filepath.ToSlash(filepath.Join(file.Name(), subdirFile.Name())), ".html", "", -1)})
+						fp.Join(file.Name(), subdirFile.Name()),
+						"/" + str.Replace(fp.ToSlash(fp.Join(file.Name(), subdirFile.Name())), ".html", "", -1),
+					},
+				)
 			}
 		} else {
-			pages = append(pages, Page{file.Name(), "/" + strings.Replace(file.Name(), ".html", "", -1)})
+			pages = append(pages, Page{file.Name(), "/" + str.Replace(file.Name(), ".html", "", -1)})
 		}
 	}
 	return pages
@@ -73,7 +78,7 @@ func getTemplatesToServe() []Page {
 
 func validateTemplateCorrectFormat(pages []Page) {
 	for _, page := range pages {
-		if filepath.Ext(page.relPath) != ".html" {
+		if fp.Ext(page.relPath) != ".html" {
 			log.Fatal("Page does not end in .html: " + page.relPath)
 		}
 	}

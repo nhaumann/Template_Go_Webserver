@@ -5,5 +5,7 @@ import (
 )
 
 func main() {
-	srvr.Serve()
+	//serve webserver in the background, allow user input to continue
+	srvr.ServeTemplatesAndStyles()
+
 }
