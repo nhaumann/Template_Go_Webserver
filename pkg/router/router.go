@@ -60,6 +60,7 @@ func getTemplatesToServe() []Page {
 			if err != nil {
 				log.Fatal(err)
 			}
+			//code smell? maybe - readability improvement conflicts with Go styling
 			for _, subdirFile := range subdirFiles {
 				pages = append(
 					pages,
@@ -79,7 +80,7 @@ func getTemplatesToServe() []Page {
 func validateTemplateCorrectFormat(pages []Page) {
 	for _, page := range pages {
 		if fp.Ext(page.relPath) != ".html" {
-			log.Fatal("Page does not end in .html: " + page.relPath)
+			log.Fatal("file does not contain correct HTML extension: " + page.relPath)
 		}
 	}
 }
