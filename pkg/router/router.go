@@ -18,7 +18,7 @@ const TEMPLATES_PATH = "./templates"
 const NOT_FOUND_PATH = TEMPLATES_PATH + "/notfound.html"
 
 func ServeTemplatesAndStyles() {
-	pages := preFlight()
+	pages := runPreflightAndGetRoutes()
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		for _, page := range pages {
 			if r.URL.Path == page.route {
@@ -35,7 +35,7 @@ func ServeTemplatesAndStyles() {
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
-func preFlight() []Page {
+func runPreflightAndGetRoutes() []Page {
 	//✈✈✈ Pre-flight checks ✈✈✈
 	var pages []Page = getTemplatesToServe()
 	if len(pages) == 0 {
