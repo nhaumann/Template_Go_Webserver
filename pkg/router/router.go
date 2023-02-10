@@ -13,8 +13,9 @@ type Page struct {
 	route   string
 }
 
-const TEMPLATES_PATH = "./templates"
+const STATIC_CONTENT_PREFIX = "/static/"
 
+const TEMPLATES_PATH = "./templates"
 const NOT_FOUND_PATH = TEMPLATES_PATH + "/notfound.html"
 
 func ServeTemplatesAndStyles() {
@@ -26,7 +27,7 @@ func ServeTemplatesAndStyles() {
 				return
 			}
 		}
-		if str.HasPrefix(r.URL.Path, "/static/") {
+		if str.HasPrefix(r.URL.Path, STATIC_CONTENT_PREFIX) {
 			http.ServeFile(w, r, fp.Join(".", r.URL.Path))
 			return
 		}
