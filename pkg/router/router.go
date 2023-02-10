@@ -14,8 +14,9 @@ type Page struct {
 	route   string
 }
 
-const NOT_FOUND_PATH = "./templates/notfound.html"
 const TEMPLATES_PATH = "./templates"
+
+const NOT_FOUND_PATH = TEMPLATES_PATH + "/notfound.html"
 
 func ServeTemplatesAndStyles() {
 	pages := preFlight()
