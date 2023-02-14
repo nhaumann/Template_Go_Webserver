@@ -1,0 +1,31 @@
+syntax="proto3";
+
+
+package healthcheck;
+
+
+option go_package = "./healthcheck";
+
+message Alive{
+    bool alive = 1;
+}
+
+message HealthCheckRequest {}
+
+message CpuUtilizationPercent {
+    double percent = 1;
+}
+
+message RamUsage {
+    double percent = 1;
+    int64 total = 2;
+    int64 used = 3;
+    int64 free = 4;
+}
+
+service HealthCheck {
+    rpc IsAlive (HealthCheckRequest) returns (Alive) {}
+    rpc GetCpuUtilizationPercent (HealthCheckRequest) returns (CpuUtilizationPercent) {}
+    rpc GetRamUsage (HealthCheckRequest) returns (RamUsage) {}
+}
+
