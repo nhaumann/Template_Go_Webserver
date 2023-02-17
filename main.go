@@ -1,16 +1,18 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	hcclnt "webserver/pkg/healthcheck/healthcheck_client"
-	hcsrver "webserver/pkg/healthcheck/healthcheck_server"
-	websrvr "webserver/pkg/webserver"
-
 	"bufio"
+	"flag"
+	"fmt"
+	websrvr "glossary/pkg/webserver"
+	"log"
 	"os"
 
-	env "github.com/joho/godotenv"
+	types "glossary/data/types"
+
+	psql "glossary/data/pssql"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -19,36 +21,98 @@ func main() {
 	//cce.Setup()
 
 	//get config from env
-	config := getConfigFromEnv()
 
-	fmt.Println(config)
+	// Define flags for the "add" command
+	addCmd := flag.NewFlagSet("add", flag.ExitOnError)
+	term := addCmd.String("term", "", "term to add")
+	definition := addCmd.String("definition", "", "definition of the term")
 
-	go websrvr.Serve(websrvr.WebServerConfig{
-		WebPort:             config.WEB_PORT,
-		StaticContentPrefix: config.STATIC_CONTENT_PREFIX,
-		WebPath:             config.WEB_PATH,
-		TemplatesPath:       config.TEMPLATES_PATH,
-		NotFoundPath:        config.NOT_FOUND_FILE_NAME_PATH,
-		WebRoot:             config.WEB_ROOT,
-	})
+	// Parse command-line arguments
+	if len(os.Args) < 2 {
+		log.Fatal("command required: serve, list, or add")
+	}
 
-	go hcsrver.Serve(hcsrver.HealthCheckServerConfig{
-		WebPort: config.HEALTCHECK_SERVER_PORT,
-	})
+	//open db
+	db, err := psql.OpenDB()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
 
-	go hcclnt.Connect(hcsrver.HealthCheckServerConfig{
-		WebPort: config.HEALTCHECK_SERVER_PORT,
-	})
+	switch os.Args[1] {
+	case "serve":
+
+		//get config from env or use docker args
+
+		config := getConfigFromEnv()
+
+		fmt.Println("Serving Glossary on port: " + config.WEB_PORT)
+		websrvr.Serve(websrvr.WebServerConfig{
+			WebPort:             config.WEB_PORT,
+			StaticContentPrefix: config.STATIC_CONTENT_PREFIX,
+			WebPath:             config.WEB_PATH,
+			TemplatesPath:       config.TEMPLATES_PATH,
+			NotFoundPath:        config.NOT_FOUND_FILE_NAME_PATH,
+			WebRoot:             config.WEB_ROOT,
+		})
+
+		// go hcsrver.Serve(hcsrver.HealthCheckServerConfig{
+		// 	WebPort: config.HEALTCHECK_SERVER_PORT,
+		// })
+
+		// go hcclnt.Connect(hcsrver.HealthCheckServerConfig{
+		// 	WebPort: config.HEALTCHECK_SERVER_PORT,
+		// })
+
+		reader := bufio.NewReader(os.Stdin)
+		reader.ReadString('\n')
+
+	case "list":
+		items, err := psql.GetGlossaryItems(db)
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, item := range items {
+			fmt.Println("Term:", item.Term, " Definition:", item.Definition)
+		}
+
+	case "add":
+		addCmd.Parse(os.Args[2:])
+		if *term == "" || *definition == "" {
+			log.Fatal("both --term and --definition flags are required")
+		} else {
+
+			id, err := psql.InsertGlossaryItem(db, types.GlossaryItem{
+				Term:       *term,
+				Definition: *definition,
+			})
+
+			if err != nil || id == 0 {
+				log.Fatal(err)
+			}
+
+			fmt.Println("Added GlossaryItem with Term: " + *term + " and Definition: " + *definition)
+
+		}
+
+	case "reset":
+		err := psql.ResetDB(db)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println("DB Reset")
+
+	default:
+		log.Fatal("command required: serve, list, or add")
+	}
 
 	//wait for user input to exit
-	reader := bufio.NewReader(os.Stdin)
-	reader.ReadString('\n')
 
 }
 
 func getConfigFromEnv() ApplicationConfig {
 	//load env
-	err := env.Load(".env")
+	err := godotenv.Load()
 	if err != nil {
 		log.Fatal(err)
 	}

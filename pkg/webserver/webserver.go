@@ -1,6 +1,8 @@
 package webserver
 
 import (
+	psql "glossary/data/pssql"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -27,7 +29,26 @@ func Serve(config WebServerConfig) {
 	resources := runPreflightAndGetRoutes(config)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/" || r.URL.Path == "" {
-			http.ServeFile(w, r, fp.Join(config.WebPath, config.TemplatesPath, "index.html"))
+			db, err := psql.OpenDB()
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer db.Close()
+			terms, err := psql.GetGlossaryItems(db)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			tmpl, err := template.ParseFiles(fp.Join(config.WebPath, config.TemplatesPath, "index.html"))
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			err = tmpl.Execute(w, terms)
+			if err != nil {
+				log.Fatal(err)
+			}
+
 			return
 		}
 		for _, page := range resources {

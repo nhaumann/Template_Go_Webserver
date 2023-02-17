@@ -214,6 +214,7 @@ func executeLongRunningTasksUsingChannels(iterations int) {
 			ch <- 1
 		}()
 	}
+
 	for i := 0; i < iterations; i++ {
 		<-ch
 	}

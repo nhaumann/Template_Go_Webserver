@@ -5,7 +5,7 @@ import (
 	"log"
 	"net"
 
-	pb "webserver/pkg/healthcheck"
+	pb "glossary/pkg/healthcheck"
 
 	grpc "google.golang.org/grpc"
 )

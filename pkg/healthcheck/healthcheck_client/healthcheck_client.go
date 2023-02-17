@@ -5,9 +5,9 @@ import (
 	"log"
 	"strconv"
 
-	pb "webserver/pkg/healthcheck"
+	pb "glossary/pkg/healthcheck"
 
-	hcsrver "webserver/pkg/healthcheck/healthcheck_server"
+	hcsrver "glossary/pkg/healthcheck/healthcheck_server"
 
 	grpc "google.golang.org/grpc"
 	ins "google.golang.org/grpc/credentials/insecure"

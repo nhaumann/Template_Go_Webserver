@@ -5,9 +5,12 @@
         <title>Home</title> 
     </head> 
     <body> 
-        <h1>Home</h1> 
-        <p> 
-            This is the home page. 
-        </p>
+        <h1>Glossary</h1>        
+        <dl>
+           {{range .}}
+           <dt>{{.Term}}</dt>
+           <dd>{{.Definition}}</dd>
+           {{end}}
+        </dl>
     </body> 
 </html>
