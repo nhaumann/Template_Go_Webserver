@@ -1,7 +1,9 @@
-all: build proto
+all: glossary.exe
 
-build:
-	go build -o main .
+glossary.exe:
+	go build . -o glossary.exe
 
-proto:
-	protoc -I ./proto --go-grpc_out=./proto ./proto/healthcheck.proto
+clean: 
+	rm -f glossary.exe
+migrate-dev:
+  npx prisma migrate dev --schema ./data/schema.prisma
