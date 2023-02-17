@@ -1,0 +1,31 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "go run github.com/prisma/prisma-client-go"
+    output   = "./generated/prisma-client"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:Glossary.db"
+  
+}
+
+model GlossaryItem {
+  id        Int      @id @default(autoincrement())
+  term      String
+  definition String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
